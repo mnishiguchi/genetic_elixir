@@ -22,3 +22,22 @@ https://pragprog.com/titles/smgaelixir/genetic-algorithms-in-elixir/
 - create children
 - mutate children
 ```
+
+## Chromosomes
+
+- represents solutions to problems
+
+## Hyperparameters
+
+- the parts of the algorithm you set before the algorithm starts training
+- population size, mutation rate, etc
+- To ensure you can change hyperparameters without too much of a headache, you need to implement a simple configuration mechanism into your framework that separates the hyperparameters from the overall structure of the algorithm.
+
+## Elitism selection
+
+- Because the population is sorted by the fitness, the strongest chromosomes will reproduce with
+other strong chromosomes.
+
+## Crossover
+
+- The goal of crossover is to exploit the strength of current solutions to find new better solutions.
