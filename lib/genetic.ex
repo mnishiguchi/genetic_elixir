@@ -7,105 +7,115 @@ defmodule Genetic do
   @default_population_size 100
 
   @doc """
+  Runs the algorithm.
+
   ## Examples
 
-      genotype_fun = fn -> for _ <- 1..1000, do: Enum.random(0..1) end
-      fitness_fun = fn chromosome -> Enum.sum(chromosome) end
-      Genetic.run(genotype_fun, fitness_fun, 1000)
+      iex> Genetic.run(OneMaxProblem)
+      Current Best: 1000
 
   """
-  def run(genotype_fun, fitness_fun, max_fitness, hyperparameters \\ []) do
-    initialize(genotype_fun)
-    |> evolve(fitness_fun, max_fitness, hyperparameters)
+  def run(problem_mod, hyperparameters \\ [])
+      when is_atom(problem_mod) and is_list(hyperparameters) do
+    initialize(&problem_mod.genotype/0)
+    |> evolve(problem_mod, hyperparameters)
   end
 
   @doc """
-  Creates a list of possible solutions.
-
-  Typically, the more chromosomes you have, the longer it takes to perform transformations on the
-  entire population. Conversely, the fewer chromosomes you have, the longer it takes to produce a
-  viable solution to our problem and the more susceptible our population is to premature
-  convergence.
+  Creates a list of chromosomes (possible solutions) using a specified genotype function.
   """
-  def initialize(genotype_fun, hyperparameters \\ []) do
+  def initialize(genotype_fun, hyperparameters \\ [])
+      when is_function(genotype_fun) and is_list(hyperparameters) do
     population_size = hyperparameters[:population_size] || @default_population_size
+
     for _ <- 1..population_size do
       genotype_fun.()
     end
   end
 
   @doc """
+  Models a single evoluton in the genetic algorithm. The process is repeated until a solution is
+  found.
   """
-  def evolve(population, fitness_fun, max_fitness, hyperparameters \\ []) do
-    population = evaluate(population, fitness_fun, hyperparameters)
-    best = hd(population)
-    IO.write("\rCurrent Best: " <> Integer.to_string(Enum.sum(best)))
+  def evolve(chromosomes, problem_mod, hyperparameters \\ [])
+      when is_list(chromosomes) and is_atom(problem_mod) and is_list(hyperparameters) do
+    chromosomes = evaluate(chromosomes, &problem_mod.calc_fitness/1, hyperparameters)
+    best = hd(chromosomes)
+    IO.write("\rCurrent Best: #{best.fitness}")
 
-    if Enum.sum(best) == max_fitness do
+    if problem_mod.terminate?(chromosomes) do
       # Base case (termination criteria)
       best
     else
       # Recursive case
-      population
+      chromosomes
       |> select(hyperparameters)
       |> crossover(hyperparameters)
       |> mutate(hyperparameters)
-      |> evolve(fitness_fun, max_fitness, hyperparameters)
+      |> evolve(problem_mod, hyperparameters)
     end
   end
 
   @doc """
-  Sorts a population by fitness. The fitness function can return anything as long as the fitness
+  Sorts the chromosomes by fitness. The fitness function can return anything as long as the fitness
   can be sorted.
   """
-  def evaluate(population, fitness_fun, hyperparameters \\ []) do
-    population
-    # Sort the population in descending order
-    |> Enum.sort_by(fitness_fun, &>=/2)
+  def evaluate(chromosomes, fitness_fun, hyperparameters \\ [])
+      when is_list(chromosomes) and is_function(fitness_fun) and is_list(hyperparameters) do
+    chromosomes
+    |> Enum.map(fn chromosome ->
+      fitness = fitness_fun.(chromosome)
+      age = chromosome.age + 1
+      %Genetic.Chromosome{chromosome | fitness: fitness, age: age}
+    end)
+    # Sort the chromosomes in descending order
+    |> Enum.sort_by(& &1.fitness, &>=/2)
   end
 
   @doc """
   Formats the chromosomes nicely for crossover.
   """
-  def select(population, hyperparameters \\ []) do
-    population
+  def select(chromosomes, hyperparameters \\ [])
+      when is_list(chromosomes) and is_list(hyperparameters) do
+    chromosomes
     |> Enum.chunk_every(2)
     # Tuples are easier to work with in the next step.
     |> Enum.map(&List.to_tuple(&1))
   end
 
   @doc """
-  Takes two or more parent chromosomes and produces two or more child chromosomes.
+  Reproduces chromosomes for the better, exploiting the strength of current chromosomes.
   """
-  def crossover(population, hyperparameters \\ []) do
-    population
-    |> Enum.reduce([], fn {parent1, parent2}, acc ->
-      # A random crossover point (uniform integer between 0 and N-1)
-      cx_point = :rand.uniform(length(parent1))
+  def crossover(chromosomes, hyperparameters \\ [])
+      when is_list(chromosomes) and is_list(hyperparameters) do
+    chromosomes
+    |> Enum.reduce(
+      [],
+      fn {parent1, parent2}, acc ->
+        # A random crossover point (uniform integer between 0 and N-1)
+        cx_point = :rand.uniform(length(parent1.genes))
 
-      {h1, t1} = Enum.split(parent1, cx_point)
-      {h2, t2} = Enum.split(parent2, cx_point)
+        # Single-point crossover is one of the simplest crossover methods.
+        {h1, t1} = Enum.split(parent1.genes, cx_point)
+        {h2, t2} = Enum.split(parent2.genes, cx_point)
+        child1 = %Genetic.Chromosome{parent1 | genes: h1 ++ t2}
+        child2 = %Genetic.Chromosome{parent2 | genes: h2 ++ t1}
 
-      # Single-point crossover is one of the simplest crossover methods.
-      [h1 ++ t2, h2 ++ t1 | acc]
-    end)
+        [child1, child2 | acc]
+      end
+    )
   end
 
   @doc """
-  Despite initializing our population to a seemingly random distribution, eventually the parents
-  get too genetically similar to make any improvements during crossover. It is important to
-  include the mutation step in our evolve.
-
-  We only want to mutate a small percentage of our population so we can preserve the progress that
-  has already been made.
-
+  Shuffles 5% of the chromosomes.
   """
-  def mutate(population, hyperparameters \\ []) do
-    population
+  def mutate(chromosomes, hyperparameters \\ [])
+      when is_list(chromosomes) and is_list(hyperparameters) do
+    chromosomes
     |> Enum.map(fn chromosome ->
       # A probability of 5%
       if :rand.uniform() < 0.05 do
-        Enum.shuffle(chromosome)
+        %Genetic.Chromosome{chromosome | genes: Enum.shuffle(chromosome.genes)}
       else
         chromosome
       end

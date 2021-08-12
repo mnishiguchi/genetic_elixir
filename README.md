@@ -1,6 +1,8 @@
-# Genetic algorithm
+# Genetic algorithms in Elixir
 
-https://pragprog.com/titles/smgaelixir/genetic-algorithms-in-elixir/
+This repo is for my study notes reading the bood [Genetic Algorithms in Elixir](https://pragprog.com/titles/smgaelixir/genetic-algorithms-in-elixir/) by Sean Moriarity.
+
+## Genetic algorithm
 
 - optimization or the search for the best
 - balance between exploration and exploitation (using known info)
@@ -36,7 +38,7 @@ https://pragprog.com/titles/smgaelixir/genetic-algorithms-in-elixir/
 ## Elitism selection
 
 - Because the population is sorted by the fitness, the strongest chromosomes will reproduce with
-other strong chromosomes.
+  other strong chromosomes.
 
 ## Crossover
 
