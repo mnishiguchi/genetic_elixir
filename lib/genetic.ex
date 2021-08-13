@@ -45,6 +45,7 @@ defmodule Genetic do
 
     if problem_mod.terminate?(chromosomes) do
       # Base case (termination criteria)
+      IO.write "\n"
       best
     else
       # Recursive case
