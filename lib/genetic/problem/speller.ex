@@ -1,10 +1,10 @@
-defmodule SpellerProblem do
+defmodule Genetic.Problem.Speller do
   @moduledoc """
   Spells a target word.
 
   ## Examples
 
-      Genetic.run(SpellerProblem)
+      Genetic.run(Genetic.Problem.Speller)
 
   """
 

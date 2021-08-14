@@ -1,4 +1,4 @@
-defmodule OneMaxProblem do
+defmodule Genetic.Problem.OneMax do
   @moduledoc """
   The one-max problem
   - Question: What is the maximum sum of a bitstring of length N?
@@ -6,13 +6,13 @@ defmodule OneMaxProblem do
 
   ## Examples
 
-      Genetic.run(OneMaxProblem)
+      Genetic.run(Genetic.Problem.OneMax)
 
   """
 
   @behaviour Genetic.Problem
 
-  @bitstring_length 1000
+  @bitstring_length 42
 
   @impl Genetic.Problem
   def genotype do

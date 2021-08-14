@@ -11,7 +11,7 @@ defmodule Genetic do
 
   ## Examples
 
-      iex> Genetic.run(OneMaxProblem)
+      iex> Genetic.run(Genetic.Problem.OneMax)
       Current Best: 1000
 
   """
@@ -44,7 +44,7 @@ defmodule Genetic do
     IO.write("\rCurrent Best: #{best.fitness}")
 
     if problem_mod.terminate?(chromosomes) do
-      # Base case (termination criteria)
+      # Base case
       IO.write "\n"
       best
     else
