@@ -17,8 +17,10 @@ defmodule Genetic do
   """
   def run(problem_mod, hyperparameters \\ [])
       when is_atom(problem_mod) and is_list(hyperparameters) do
-    initialize(&problem_mod.genotype/0)
-    |> evolve(problem_mod, hyperparameters)
+    epoch = 0
+    population = initialize(&problem_mod.genotype/0)
+
+    evolve(population, problem_mod, epoch, hyperparameters)
   end
 
   @doc """
@@ -37,15 +39,16 @@ defmodule Genetic do
   Models a single evoluton in the genetic algorithm. The process is repeated until a solution is
   found.
   """
-  def evolve(chromosomes, problem_mod, hyperparameters \\ [])
-      when is_list(chromosomes) and is_atom(problem_mod) and is_list(hyperparameters) do
+  def evolve(chromosomes, problem_mod, epoch, hyperparameters \\ [])
+      when is_list(chromosomes) and is_atom(problem_mod) and is_integer(epoch) and
+             is_list(hyperparameters) do
     chromosomes = evaluate(chromosomes, &problem_mod.calc_fitness/1, hyperparameters)
     best = hd(chromosomes)
     IO.write("\rCurrent Best: #{best.fitness}")
 
-    if problem_mod.terminate?(chromosomes) do
+    if problem_mod.terminate?(chromosomes, epoch) do
       # Base case
-      IO.write "\n"
+      IO.write("\n")
       best
     else
       # Recursive case
@@ -53,7 +56,7 @@ defmodule Genetic do
       |> select(hyperparameters)
       |> crossover(hyperparameters)
       |> mutate(hyperparameters)
-      |> evolve(problem_mod, hyperparameters)
+      |> evolve(problem_mod, epoch + 1, hyperparameters)
     end
   end
 

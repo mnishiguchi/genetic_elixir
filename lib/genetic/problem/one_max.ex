@@ -26,7 +26,7 @@ defmodule Genetic.Problem.OneMax do
   end
 
   @impl Genetic.Problem
-  def terminate?([best | _]) do
+  def terminate?([best | _], _epoch) do
     best.fitness == @bitstring_length
   end
 end

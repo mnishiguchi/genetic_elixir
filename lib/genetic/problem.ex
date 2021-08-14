@@ -5,5 +5,5 @@ defmodule Genetic.Problem do
 
   @callback calc_fitness(Chromosome.t()) :: number()
 
-  @callback terminate?(Enum.t()) :: boolean()
+  @callback terminate?(Enum.t(), epoch :: integer()) :: boolean()
 end
