@@ -15,18 +15,18 @@ defmodule Genetic.Problem.OneMax do
   @bitstring_length 42
 
   @impl Genetic.Problem
-  def genotype do
+  def genotype(opts \\ []) do
     genes = for _ <- 1..@bitstring_length, do: Enum.random(0..1)
     %Genetic.Chromosome{genes: genes, size: @bitstring_length}
   end
 
   @impl Genetic.Problem
-  def calc_fitness(chromosome) do
+  def calc_fitness(chromosome, opts \\ []) do
     Enum.sum(chromosome.genes)
   end
 
   @impl Genetic.Problem
-  def terminate?([best | _], _epoch) do
+  def terminate?([best | _], _epoch, opts \\ []) do
     best.fitness == @bitstring_length
   end
 end

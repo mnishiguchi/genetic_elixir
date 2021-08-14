@@ -31,7 +31,7 @@ defmodule Genetic.Problem.Cargo do
   @weight_limit 40
 
   @impl Genetic.Problem
-  def genotype do
+  def genotype(opts \\ []) do
     genes =
       for _ <- 1..@chromosome_size do
         Enum.random(0..1)
@@ -41,7 +41,7 @@ defmodule Genetic.Problem.Cargo do
   end
 
   @impl Genetic.Problem
-  def calc_fitness(chromosome) do
+  def calc_fitness(chromosome, opts \\ []) do
     _profits =
       if calc_weight(chromosome) > @weight_limit do
         # A penalty
@@ -66,7 +66,7 @@ defmodule Genetic.Problem.Cargo do
   end
 
   @impl Genetic.Problem
-  def terminate?(_population, epoch) do
+  def terminate?(_population, epoch, opts \\ []) do
     epoch == 1000
   end
 end

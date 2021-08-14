@@ -18,7 +18,7 @@ defmodule Genetic do
   def run(problem_mod, hyperparameters \\ [])
       when is_atom(problem_mod) and is_list(hyperparameters) do
     epoch = 0
-    population = initialize(&problem_mod.genotype/0)
+    population = initialize(&problem_mod.genotype/1, hyperparameters)
 
     evolve(population, problem_mod, epoch, hyperparameters)
   end
@@ -31,7 +31,7 @@ defmodule Genetic do
     population_size = hyperparameters[:population_size] || @default_population_size
 
     for _ <- 1..population_size do
-      genotype_fun.()
+      genotype_fun.(hyperparameters)
     end
   end
 
@@ -42,11 +42,11 @@ defmodule Genetic do
   def evolve(chromosomes, problem_mod, epoch, hyperparameters \\ [])
       when is_list(chromosomes) and is_atom(problem_mod) and is_integer(epoch) and
              is_list(hyperparameters) do
-    chromosomes = evaluate(chromosomes, &problem_mod.calc_fitness/1, hyperparameters)
+    chromosomes = evaluate(chromosomes, &problem_mod.calc_fitness/2, hyperparameters)
     best = hd(chromosomes)
     IO.write("\rCurrent Best: #{best.fitness}")
 
-    if problem_mod.terminate?(chromosomes, epoch) do
+    if problem_mod.terminate?(chromosomes, epoch, hyperparameters) do
       # Base case
       IO.write("\n")
       best
@@ -68,7 +68,7 @@ defmodule Genetic do
       when is_list(chromosomes) and is_function(fitness_fun) and is_list(hyperparameters) do
     chromosomes
     |> Enum.map(fn chromosome ->
-      fitness = fitness_fun.(chromosome)
+      fitness = fitness_fun.(chromosome, hyperparameters)
       age = chromosome.age + 1
       %Genetic.Chromosome{chromosome | fitness: fitness, age: age}
     end)
